@@ -15,7 +15,7 @@ Make a prediction by passing the feature values as query parameters in the URL.
 
 #### Example Request:
 
-```http
+```bash
 http://127.0.0.1:7000/predict?s_length=5.1&s_width=3.5&p_length=1.4&p_width=0.2
 ```
 
