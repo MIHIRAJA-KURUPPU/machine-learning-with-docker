@@ -4,7 +4,7 @@ from flask import Flask, request
 import pandas as pd
 
 # Load the pre-trained model
-with open('rf.pkl', 'rb') as model_file:
+with open('./rf.pkl', 'rb') as model_file:
     model = pickle.load(model_file)
 
 app = Flask(__name__)

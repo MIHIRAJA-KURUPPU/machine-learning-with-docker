@@ -1,0 +1,34 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+
+# Env files
+*.env
+
+# Jupyter stuff
+.ipynb_checkpoints/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Project-specific files to ignore
+flask-predict_api.py
+simple.py
+model.py
+notes.txt
+README.md
+
+# Optional: ignore test folders or logs
+tests/
+*.log
