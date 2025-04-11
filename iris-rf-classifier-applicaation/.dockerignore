@@ -11,13 +11,6 @@ env/
 # Env files
 *.env
 
-# Jupyter stuff
-.ipynb_checkpoints/
-
-# System files
-.DS_Store
-Thumbs.db
-
 # Git
 .git
 .gitignore
