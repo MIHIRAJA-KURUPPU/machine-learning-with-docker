@@ -60,7 +60,7 @@ You can also use the application programmatically by sending a POST request to t
 import requests
 
 url = 'http://localhost:5000/cluster'
-files = {'dataset': open('your_data.csv', 'rb')}
+files = {'dataset': open('sample_text_data.csv', 'rb')}
 data = {'col': 'text_column', 'no_of_clusters': 'auto'}
 
 response = requests.post(url, files=files, data=data)
@@ -92,3 +92,57 @@ The application generates a ZIP file containing:
 - nltk
 - xlsxwriter
 - openpyxl
+
+## Docker Setup
+
+If you prefer to run the application in a Docker container, follow these steps:
+
+### 1. Build the Docker Image
+
+First, make sure you have **Docker** installed on your system. You can follow the installation guide on the [official Docker website](https://docs.docker.com/get-docker/).
+
+To build the Docker image, navigate to the root directory of your project (where the `Dockerfile` is located) and run the following command:
+
+```bash
+docker build -t text-clustering-app .
+```
+
+This will build the Docker image named `text-clustering-app`.
+
+### 2. Run the Docker Container
+
+Once the image is built, you can run the application inside a Docker container with this command:
+
+```bash
+docker run -d -p 5000:5000 --name text-clustering-container text-clustering-app
+```
+
+This will:
+
+- Start the container in detached mode (`-d`).
+- Map port 5000 of the container to port 5000 on your host machine (`-p 5000:5000`).
+- Name the container `text-clustering-container`.
+
+### 3. Access the Application
+
+Once the container is running, you can access the web application in your browser at:
+
+```
+http://localhost:5000
+```
+
+The application will be fully functional within the Docker container.
+
+### 4. Stopping and Removing the Container
+
+If you want to stop the container, run:
+
+```bash
+docker stop text-clustering-container
+```
+
+To remove the container:
+
+```bash
+docker rm text-clustering-container
+```
