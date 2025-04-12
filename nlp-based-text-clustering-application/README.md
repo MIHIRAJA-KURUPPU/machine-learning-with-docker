@@ -26,14 +26,6 @@ This application is a Flask-based web service that performs text clustering on d
 pip install -r requirements.txt
 ```
 
-3. Download NLTK data:
-
-```python
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-```
-
 ## Usage
 
 1. Run the application:

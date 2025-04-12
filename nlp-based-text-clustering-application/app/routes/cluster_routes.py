@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, request, make_response, send_file, render_template
+from flask import Blueprint, request, make_response, send_file
 from io import BytesIO
 import logging
 import time
 import zipfile
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA

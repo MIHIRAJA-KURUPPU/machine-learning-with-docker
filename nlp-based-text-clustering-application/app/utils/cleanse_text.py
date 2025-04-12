@@ -1,18 +1,16 @@
 import re
+from stemming.porter2 import stem
 
 def cleanse_text(text):
     """
     Preprocess text by removing special characters, lowercasing,
     and removing common English stopwords.
-    
-    This version doesn't require NLTK resources.
     """
     if not isinstance(text, str) or not text:
         return ""
     
     # Convert to lowercase and remove special characters
     text = re.sub(r'[^\w\s]', '', text.lower())
-    
     # Simple tokenization by splitting on whitespace
     tokens = text.split()
     
@@ -28,24 +26,30 @@ def cleanse_text(text):
                  'themselves', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 
                  'would', 'should', 'could', 'ought', 'im', 'youre', 'hes', 'shes', 'were', 
                  'theyre', 'ive', 'youve', 'weve', 'theyve', 'cant', 'dont', 'wont', 'not'}
+
+    # Filter and stem
+    cleaned = [stem(word) for word in tokens if word not in stop_words]
     
-    # Filter out stopwords
-    tokens = [word for word in tokens if word not in stop_words]
+    return ' '.join(cleaned)
+
+
+#     # Filter out stopwords
+#     tokens = [word for word in tokens if word not in stop_words]
     
-    # Simple stemming (just cutting off common endings)
-    stemmed_tokens = []
-    for word in tokens:
-        if len(word) > 3:
-            if word.endswith('ing'):
-                word = word[:-3]
-            elif word.endswith('ed'):
-                word = word[:-2]
-            elif word.endswith('s') and not word.endswith('ss'):
-                word = word[:-1]
-            elif word.endswith('ly'):
-                word = word[:-2]
-            elif word.endswith('ment'):
-                word = word[:-4]
-        stemmed_tokens.append(word)
+#     # Simple stemming (just cutting off common endings)
+#     stemmed_tokens = []
+#     for word in tokens:
+#         if len(word) > 3:
+#             if word.endswith('ing'):
+#                 word = word[:-3]
+#             elif word.endswith('ed'):
+#                 word = word[:-2]
+#             elif word.endswith('s') and not word.endswith('ss'):
+#                 word = word[:-1]
+#             elif word.endswith('ly'):
+#                 word = word[:-2]
+#             elif word.endswith('ment'):
+#                 word = word[:-4]
+#         stemmed_tokens.append(word)
     
-    return ' '.join(stemmed_tokens)
+#     return ' '.join(stemmed_tokens)
