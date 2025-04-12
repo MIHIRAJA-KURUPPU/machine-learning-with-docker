@@ -1,0 +1,9 @@
+# requirements.txt
+Flask
+pandas
+numpy
+scikit-learn
+matplotlib
+nltk
+xlsxwriter
+openpyxl
