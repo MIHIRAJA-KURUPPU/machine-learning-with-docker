@@ -19,7 +19,7 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() in ('true', '1', 't')
     
     # Model configuration
-    MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'models', 'saved')  # Change this line
+    MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')  # Change this line
     MODEL_FILE = 'mnist_model.h5'
     MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
     

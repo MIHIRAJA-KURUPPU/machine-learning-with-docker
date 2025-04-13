@@ -1,22 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   // --- Tab Switching ---
-  const tabButtons = document.querySelectorAll(".tab-btn");
-  const tabContents = document.querySelectorAll(".tab-content");
+  const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
 
   tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
-      tabContents.forEach((content) => content.classList.remove("active"));
-
-      button.classList.add("active");
-      const tabId = `${button.dataset.tab}-tab`;
-      document.getElementById(tabId).classList.add("active");
+    button.addEventListener("shown.bs.tab", function (event) {
+      // Clear results when switching tabs
       clearResults();
     });
   });
 
   // --- Canvas Drawing Setup ---
-  const canvas = document.getElementById("drawing-canvas");
+  const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   let isDrawing = false;
 
@@ -32,10 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
   initCanvas();
 
   function getCoords(e) {
+    const rect = canvas.getBoundingClientRect();
     if (e.type.includes("mouse")) {
-      return { x: e.offsetX, y: e.offsetY };
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
     } else {
-      const rect = canvas.getBoundingClientRect();
       return {
         x: e.touches[0].clientX - rect.left,
         y: e.touches[0].clientY - rect.top,
@@ -64,24 +61,29 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.beginPath();
   }
 
+  // Mouse event listeners
   canvas.addEventListener("mousedown", startDrawing);
   canvas.addEventListener("mousemove", draw);
   canvas.addEventListener("mouseup", stopDrawing);
   canvas.addEventListener("mouseout", stopDrawing);
-  canvas.addEventListener("touchstart", (e) => {
+
+  // Touch event listeners
+  canvas.addEventListener("touchstart", function (e) {
     e.preventDefault();
     startDrawing(e);
   });
-  canvas.addEventListener("touchmove", (e) => {
+
+  canvas.addEventListener("touchmove", function (e) {
     e.preventDefault();
     draw(e);
   });
+
   canvas.addEventListener("touchend", stopDrawing);
 
   // --- Clear Canvas ---
   function clearCanvas() {
     initCanvas();
-    document.getElementById("result-container").classList.add("hidden");
+    document.getElementById("canvas-prediction-result").classList.add("d-none");
   }
 
   document
@@ -96,17 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
   imageUpload.addEventListener("change", function (event) {
     const file = event.target.files[0];
 
-    imagePreview.src = "";
-    previewContainer.classList.add("hidden");
+    if (!file) return;
 
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        previewContainer.classList.remove("hidden");
-      };
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      imagePreview.src = e.target.result;
+      previewContainer.classList.remove("d-none");
+    };
+    reader.readAsDataURL(file);
   });
 
   // --- Predict from Canvas ---
@@ -118,8 +117,11 @@ document.addEventListener("DOMContentLoaded", function () {
       body: JSON.stringify({ image_data: imageData }),
     })
       .then((res) => res.json())
-      .then((data) => displayResults(data))
-      .catch((err) => console.error("Error:", err));
+      .then((data) => displayCanvasPrediction(data))
+      .catch((err) => {
+        console.error("Error:", err);
+        alert("Error processing the image. Please try again.");
+      });
   });
 
   // --- Upload Form Prediction ---
@@ -129,76 +131,122 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       const formData = new FormData(this);
 
+      // Check if a file is selected
+      if (!imageUpload.files[0]) {
+        alert("Please select an image to upload.");
+        return;
+      }
+
       fetch("/predict", {
         method: "POST",
         body: formData,
       })
         .then((res) => res.json())
-        .then((data) => displayResults(data))
-        .catch((err) => console.error("Error:", err));
+        .then((data) => displayUploadPrediction(data))
+        .catch((err) => {
+          console.error("Error:", err);
+          alert("Error processing the uploaded image. Please try again.");
+        });
     });
 
-  // --- Try Again Button ---
-  document.getElementById("try-again").addEventListener("click", function () {
-    clearCanvas();
-    imageUpload.value = "";
-    imagePreview.src = "";
-    previewContainer.classList.add("hidden");
+  // --- Display Canvas Prediction Results ---
+  function displayCanvasPrediction(data) {
+    const resultDiv = document.getElementById("canvas-prediction-result");
+    const contentDiv = document.getElementById("canvas-prediction-content");
 
-    document.getElementById("result-container").classList.add("hidden");
-    document.querySelector(".confidence-bar").style.width = "0%";
-    document.querySelector(".confidence-text").textContent = "Confidence: 0%";
-    document.querySelector(".prediction-digit").textContent = "?";
-    document.querySelector(".alternatives-container").innerHTML = "";
-  });
+    if (data.error) {
+      contentDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    } else {
+      let html = `
+        <div class="text-center mb-3">
+          <h2 class="display-1">${data.digit}</h2>
+          <p>Confidence: ${data.confidence.toFixed(2)}%</p>
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: ${
+              data.confidence
+            }%" 
+                 aria-valuenow="${
+                   data.confidence
+                 }" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      `;
 
-  // --- Display Results ---
-  function displayResults(data) {
-    const resultContainer = document.getElementById("result-container");
-    const predictionDigit = document.querySelector(".prediction-digit");
-    const confidenceBar = document.querySelector(".confidence-bar");
-    const confidenceText = document.querySelector(".confidence-text");
-    const alternativesContainer = document.querySelector(
-      ".alternatives-container"
-    );
+      // Handle different result formats
+      if (data.alternatives && data.alternatives.length > 0) {
+        html += `<p>Alternatives:</p><ul>`;
+        data.alternatives.forEach((alt) => {
+          html += `<li>Digit ${alt.digit} (${alt.probability.toFixed(
+            2
+          )}%)</li>`;
+        });
+        html += `</ul>`;
+      }
 
-    predictionDigit.textContent = data.digit;
-    confidenceBar.style.width = `${data.confidence}%`;
-    confidenceText.textContent = `Confidence: ${data.confidence.toFixed(2)}%`;
+      // Support for the augmented results format
+      if (data.augmented && data.augmented.length > 0) {
+        html += `<p>Augmented results:</p><ul>`;
+        data.augmented.forEach((aug) => {
+          html += `<li>Digit ${aug.digit} (${aug.confidence.toFixed(2)}%)</li>`;
+        });
+        html += `</ul>`;
+      }
 
-    alternativesContainer.innerHTML = "";
-    const alternatives = getTopAlternatives(data.probabilities, data.digit);
-    alternatives.forEach((alt) => {
-      const altElement = document.createElement("div");
-      altElement.classList.add("alternative");
-      altElement.innerHTML = `
-          <div class="alt-digit">${alt.digit}</div>
-          <div class="alt-probability">${alt.probability.toFixed(2)}%</div>
-        `;
-      alternativesContainer.appendChild(altElement);
-    });
+      // Support for consensus digit
+      if (data.consensus !== undefined) {
+        html += `<p>Consensus digit: <strong>${data.consensus}</strong></p>`;
+      }
 
-    resultContainer.classList.remove("hidden");
+      contentDiv.innerHTML = html;
+    }
+
+    resultDiv.classList.remove("d-none");
   }
 
-  function clearResults() {
-    document.getElementById("result-container").classList.add("hidden");
-    document.querySelector(".confidence-bar").style.width = "0%";
-    document.querySelector(".confidence-text").textContent = "Confidence: 0%";
-    document.querySelector(".prediction-digit").textContent = "?";
-    document.querySelector(".alternatives-container").innerHTML = "";
+  // --- Display Upload Prediction Results ---
+  function displayUploadPrediction(data) {
+    const resultDiv = document.getElementById("upload-prediction-result");
+    const contentDiv = document.getElementById("upload-prediction-content");
 
-    clearCanvas();
+    if (data.error) {
+      contentDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    } else {
+      contentDiv.innerHTML = `
+        <div class="text-center mb-3">
+          <h2 class="display-1">${data.digit}</h2>
+          <p>Confidence: ${data.confidence.toFixed(2)}%</p>
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: ${
+              data.confidence
+            }%" 
+                 aria-valuenow="${
+                   data.confidence
+                 }" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    resultDiv.classList.remove("d-none");
+  }
+
+  // --- Utility Functions ---
+  function clearResults() {
+    // Hide both result containers
+    document.getElementById("canvas-prediction-result").classList.add("d-none");
+    document.getElementById("upload-prediction-result").classList.add("d-none");
+
+    // Clear the preview if in upload tab
     imageUpload.value = "";
     imagePreview.src = "";
-    previewContainer.classList.add("hidden");
+    previewContainer.classList.add("d-none");
   }
 
   // --- Top Alternatives ---
   function getTopAlternatives(probabilities, mainPrediction, count = 3) {
     return probabilities
-      .map((p, i) => ({ digit: i, probability: p * 100 }))
-      .filter((item) => item.digit !== mainPrediction)
+      .map((p, i) => ({ digit: i, probability: p }))
+      .filter((item) => item.digit !== parseInt(mainPrediction))
       .sort((a, b) => b.probability - a.probability)
       .slice(0, count);
   }

@@ -1,0 +1,235 @@
+{% extends "base.html" %} {% block title %}MNIST Model Information{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active">Model Information</li>
+      </ol>
+    </nav>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>MNIST Model Information</h2>
+      </div>
+      <div class="card-body">
+        <div id="model-loading">
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          <p class="text-center mt-2">Loading model information...</p>
+        </div>
+
+        <div id="model-content" class="d-none">
+          <h3>Model Architecture</h3>
+          <div id="model-summary" class="model-info"></div>
+
+          <h3 class="mt-4">Model Performance</h3>
+          <div id="performance" class="alert alert-info">
+            <p>
+              Model performance metrics will be displayed here if available.
+            </p>
+          </div>
+
+          <h3 class="mt-4">Layer Visualization</h3>
+          <p>Neural network layers:</p>
+          <div id="layers-visualization"></div>
+        </div>
+
+        <div id="model-error" class="alert alert-danger d-none">
+          <p>Failed to load model information. Please try again later.</p>
+        </div>
+
+        <div class="mt-4">
+          <a href="/" class="btn btn-primary">Back to Home</a>
+
+          <div class="float-end">
+            <form id="train-form" class="d-inline-block">
+              <div class="input-group">
+                <span class="input-group-text">Admin Secret</span>
+                <input
+                  type="password"
+                  id="admin-secret"
+                  class="form-control"
+                  placeholder="Admin secret"
+                />
+                <input
+                  type="number"
+                  id="epochs"
+                  class="form-control"
+                  placeholder="Epochs"
+                  value="10"
+                  min="1"
+                  max="100"
+                />
+                <button type="submit" class="btn btn-warning">
+                  Train Model
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Fetch model information
+    fetchModelInfo();
+
+    // Handle training form submission
+    document
+      .getElementById("train-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        trainModel();
+      });
+  });
+
+  function fetchModelInfo() {
+    fetch("/model_info", {
+      headers: {
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        // If server returns HTML instead of JSON, this will catch it
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new TypeError("Expected JSON but got something else");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          showError(data.error);
+        } else {
+          displayModelInfo(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching model info:", error);
+        showError("Failed to load model information.");
+      });
+  }
+
+  function displayModelInfo(data) {
+    document.getElementById("model-loading").classList.add("d-none");
+    document.getElementById("model-content").classList.remove("d-none");
+    document.getElementById("model-summary").textContent = data.model_summary;
+
+    const layersDiv = document.getElementById("layers-visualization");
+    if (data.model_layers && data.model_layers.length > 0) {
+      let html = '<div class="network-diagram">';
+
+      data.model_layers.forEach((layer, index) => {
+        html += `
+        <div class="layer-box">
+          <div class="layer-name">${layer}</div>
+          <div class="layer-index">Layer ${index + 1}</div>
+        </div>
+        ${
+          index < data.model_layers.length - 1
+            ? '<div class="layer-arrow">→</div>'
+            : ""
+        }
+      `;
+      });
+
+      html += "</div>";
+      layersDiv.innerHTML = html;
+    } else {
+      layersDiv.innerHTML = "<p>No layer information available.</p>";
+    }
+  }
+
+  function showError(message) {
+    document.getElementById("model-loading").classList.add("d-none");
+    const errorDiv = document.getElementById("model-error");
+    errorDiv.querySelector("p").textContent = message;
+    errorDiv.classList.remove("d-none");
+  }
+
+  function trainModel() {
+    const secretKey = document.getElementById("admin-secret").value;
+    const epochs = document.getElementById("epochs").value;
+
+    if (!secretKey) {
+      alert("Please enter the admin secret key.");
+      return;
+    }
+
+    // Show loading indicator
+    const trainBtn = document.querySelector("#train-form button");
+    const originalText = trainBtn.textContent;
+    trainBtn.disabled = true;
+    trainBtn.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Training...';
+
+    // Make the training request
+    fetch(`/train?secret=${secretKey}&epochs=${epochs}`)
+      .then((response) => response.json())
+      .then((data) => {
+        trainBtn.disabled = false;
+        trainBtn.textContent = originalText;
+
+        if (data.error) {
+          alert(`Error: ${data.error}`);
+        } else {
+          alert(
+            `Model trained successfully!\nAccuracy: ${data.accuracy.toFixed(
+              2
+            )}%`
+          );
+          // Refresh the model info
+          setTimeout(fetchModelInfo, 1000);
+        }
+      })
+      .catch((error) => {
+        console.error("Error training model:", error);
+        alert("Error training model. Please try again.");
+        trainBtn.disabled = false;
+        trainBtn.textContent = originalText;
+      });
+  }
+</script>
+
+<style>
+  .network-diagram {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .layer-box {
+    padding: 10px;
+    margin: 5px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .layer-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .layer-index {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+
+  .layer-arrow {
+    font-size: 1.5rem;
+    margin: 0 5px;
+  }
+</style>
+{% endblock %}

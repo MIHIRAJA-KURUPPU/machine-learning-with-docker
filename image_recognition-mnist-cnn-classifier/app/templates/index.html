@@ -3,81 +3,292 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MNIST Digit Recognition</title>
+    <title>MNIST Digit Recognition - Home</title>
+    <!-- Bootstrap CSS -->
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <style>
+      body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+      }
+      canvas {
+        background-color: white;
+        cursor: crosshair;
+        margin: 0 auto;
+        display: block;
+      }
+      .prediction-result {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
-      <header>
-        <h1>Digit Recognizer</h1>
-        <p>Draw a digit or upload an image to see if the AI can recognize it</p>
-      </header>
-
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="draw">Draw</button>
-        <button class="tab-btn" data-tab="upload">Upload</button>
-      </div>
-
-      <div class="tab-content active" id="draw-tab">
-        <div class="canvas-container">
-          <canvas id="drawing-canvas" width="280" height="280"></canvas>
-          <div class="canvas-tools">
-            <button id="clear-canvas">Clear</button>
-            <button id="predict-canvas">Recognize</button>
+      <div class="row">
+        <div class="col-12">
+          <div class="jumbotron bg-light p-4 rounded">
+            <h1 class="display-4">Handwritten Digit Recognition</h1>
+            <p class="lead">
+              This application uses a Convolutional Neural Network (CNN) trained
+              on the MNIST dataset to recognize handwritten digits.
+            </p>
+            <hr class="my-4" />
+            <p>
+              You can either draw a digit or upload an image of a digit to get
+              started.
+            </p>
           </div>
         </div>
       </div>
 
-      <div class="tab-content" id="upload-tab">
-        <form
-          id="upload-form"
-          action="/predict"
-          method="post"
-          enctype="multipart/form-data"
+      <!-- Tab navigation -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="tabs">
+            <ul class="nav nav-tabs" id="digitTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+                  id="draw-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#draw"
+                  type="button"
+                  role="tab"
+                  aria-controls="draw"
+                  aria-selected="true"
+                >
+                  Draw
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="upload-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#upload"
+                  type="button"
+                  role="tab"
+                  aria-controls="upload"
+                  aria-selected="false"
+                >
+                  Upload
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab contents -->
+      <div class="tab-content" id="digitTabsContent">
+        <!-- Draw Tab -->
+        <div
+          class="tab-pane fade show active"
+          id="draw"
+          role="tabpanel"
+          aria-labelledby="draw-tab"
         >
-          <div class="upload-area">
-            <label for="image-upload">
-              <div class="upload-prompt">
-                <div class="upload-icon">+</div>
-                <p>Click to upload an image</p>
+          <div class="row">
+            <div class="col-md-8 mx-auto">
+              <div class="draw-section mt-3">
+                <h3>Draw a Digit</h3>
+                <p>
+                  Use your mouse to draw a digit from 0-9 on the canvas below.
+                </p>
+
+                <div class="text-center">
+                  <canvas
+                    id="canvas"
+                    width="280"
+                    height="280"
+                    class="border"
+                  ></canvas>
+                  <div class="mt-2">
+                    <button
+                      id="clear-canvas"
+                      class="btn btn-secondary clear-btn"
+                    >
+                      Clear Canvas
+                    </button>
+                    <button id="predict-canvas" class="btn btn-primary">
+                      Predict Digit
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  id="canvas-prediction-result"
+                  class="prediction-result d-none mt-3"
+                >
+                  <h4>Prediction Result:</h4>
+                  <div id="canvas-prediction-content"></div>
+                </div>
               </div>
-              <input
-                type="file"
-                id="image-upload"
-                name="image"
-                accept="image/*"
-                hidden
-              />
-            </label>
+            </div>
           </div>
-          <!-- Only the preview container will be hidden by default -->
-          <div id="preview-container" class="hidden">
-            <img id="image-preview" alt="Preview" />
-            <button type="submit">Recognize Digit</button>
+        </div>
+
+        <!-- Upload Tab -->
+        <div
+          class="tab-pane fade"
+          id="upload"
+          role="tabpanel"
+          aria-labelledby="upload-tab"
+        >
+          <div class="row">
+            <div class="col-md-8 mx-auto">
+              <div class="upload-section mt-3">
+                <h3>Upload an Image</h3>
+                <p>Upload an image containing a handwritten digit.</p>
+
+                <form id="upload-form" enctype="multipart/form-data">
+                  <div class="mb-3">
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="image-upload"
+                      name="image"
+                      accept="image/*"
+                    />
+                  </div>
+                  <div id="preview-container" class="text-center mb-3 d-none">
+                    <img
+                      id="image-preview"
+                      src="#"
+                      alt="Preview"
+                      class="img-fluid"
+                      style="max-height: 280px"
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    Upload & Predict
+                  </button>
+                </form>
+
+                <div
+                  id="upload-prediction-result"
+                  class="prediction-result d-none mt-3"
+                >
+                  <h4>Prediction Result:</h4>
+                  <div id="upload-prediction-content"></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       </div>
 
-      <div id="result-container" class="hidden">
-        <h2>Prediction Results</h2>
-        <div class="prediction-display">
-          <div class="prediction-digit">?</div>
-          <div class="confidence-meter">
-            <div class="confidence-bar"></div>
-            <p class="confidence-text">Confidence: 0%</p>
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3>Explore More</h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <h5 class="card-title">Digit Examples</h5>
+                      <p class="card-text">
+                        View examples of each digit from the MNIST dataset.
+                      </p>
+                      <div class="dropdown">
+                        <button
+                          class="btn btn-outline-primary dropdown-toggle"
+                          type="button"
+                          id="dropdownMenuButton"
+                          data-bs-toggle="dropdown"
+                        >
+                          Select a digit
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <a class="dropdown-item" href="/visualize/0"
+                              >Digit 0</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/1"
+                              >Digit 1</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/2"
+                              >Digit 2</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/3"
+                              >Digit 3</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/4"
+                              >Digit 4</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/5"
+                              >Digit 5</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/6"
+                              >Digit 6</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/7"
+                              >Digit 7</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/8"
+                              >Digit 8</a
+                            >
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="/visualize/9"
+                              >Digit 9</a
+                            >
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <h5 class="card-title">Model Information</h5>
+                      <p class="card-text">
+                        View details about the neural network model used for
+                        predictions.
+                      </p>
+                      <a href="/model_info" class="btn btn-outline-primary"
+                        >View Model Info</a
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="alternative-predictions">
-          <h3>It could also be:</h3>
-          <div class="alternatives-container"></div>
-        </div>
-        <button id="try-again">Try Another</button>
       </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Your main.js script -->
+    <script src="/static/js/main.js"></script>
   </body>
 </html>

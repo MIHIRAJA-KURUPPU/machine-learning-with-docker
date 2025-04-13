@@ -60,7 +60,7 @@
                 <div class="prob-bar-container">
                   <div
                     class="prob-bar"
-                    style="width: '{{ (prediction['probabilities'][i] * 100) | round(2) }}%';"
+                    style="width: '{{ (prediction['probabilities'][i]) | round(2) }}%';"
                     <!--
                     Use
                     bracket
@@ -71,7 +71,7 @@
                   </div>
                 </div>
                 <span class="prob-value">
-                  {{ "%.2f"|format(prediction['probabilities'][i] * 100) }}%
+                  {{ "%.2f"|format(prediction['probabilities'][i]) }}%
                 </span>
               </div>
               {% endfor %}
