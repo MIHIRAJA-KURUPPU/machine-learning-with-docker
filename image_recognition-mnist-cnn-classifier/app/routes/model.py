@@ -13,7 +13,7 @@ def train_model():
     try:
         # Check for a secret key (simple authentication)
         secret = request.args.get('secret')
-        if secret != 'admin-secret-key':  # This should be more secure in production
+        if secret != Config.ADMIN_SECRET_KEY:  # This should be more secure in production
             current_app.logger.warning('Unauthorized access attempt')
             return jsonify({'error': 'Unauthorized'}), 401
             

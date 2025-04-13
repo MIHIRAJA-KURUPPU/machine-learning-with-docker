@@ -8,3 +8,4 @@ opencv-python
 Werkzeug
 matplotlib
 scipy
+dotenv-python

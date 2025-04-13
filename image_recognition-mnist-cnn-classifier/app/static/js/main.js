@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
       button.classList.add("active");
       const tabId = `${button.dataset.tab}-tab`;
       document.getElementById(tabId).classList.add("active");
+      clearResults();
     });
   });
 
@@ -178,6 +179,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     resultContainer.classList.remove("hidden");
+  }
+
+  function clearResults() {
+    document.getElementById("result-container").classList.add("hidden");
+    document.querySelector(".confidence-bar").style.width = "0%";
+    document.querySelector(".confidence-text").textContent = "Confidence: 0%";
+    document.querySelector(".prediction-digit").textContent = "?";
+    document.querySelector(".alternatives-container").innerHTML = "";
+
+    clearCanvas();
+    imageUpload.value = "";
+    imagePreview.src = "";
+    previewContainer.classList.add("hidden");
   }
 
   // --- Top Alternatives ---
