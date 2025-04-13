@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+env/
+venv/
+ENV/
+*.env
+
+# VSCode settings
+.vscode/
+
+# Model files
+models/
+*.h5
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Logs and output
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints (if any)
+.ipynb_checkpoints/
+
+# Static file builds (optional)
+static/*.map
+
+# Ignore Excel or large generated output files (optional)
+*.xlsx
+*.xls
+
+# Ignore test outputs or sample results
+mnist_cnn.py

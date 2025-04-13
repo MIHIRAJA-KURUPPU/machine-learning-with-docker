@@ -1,0 +1,53 @@
+# templates/visualize.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualize Digit {{ digit }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      .digit-examples {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .digit-example {
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        background-color: white;
+      }
+
+      .digit-example img {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Examples of Digit: {{ digit }}</h1>
+        <p>These are sample images from the MNIST training dataset</p>
+      </header>
+
+      <div class="digit-examples">
+        {% for image in images %}
+        <div class="digit-example">
+          <img src="{{ image }}" alt="Example of digit {{ digit }}" />
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="actions" style="margin-top: 2rem">
+        <a href="/" class="btn">Back to Home</a>
+      </div>
+    </div>
+  </body>
+</html>

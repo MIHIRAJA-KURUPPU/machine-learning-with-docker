@@ -1,0 +1,84 @@
+# templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MNIST Digit Recognition</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Digit Recognizer</h1>
+        <p>Draw a digit or upload an image to see if the AI can recognize it</p>
+      </header>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="draw">Draw</button>
+        <button class="tab-btn" data-tab="upload">Upload</button>
+      </div>
+
+      <div class="tab-content active" id="draw-tab">
+        <div class="canvas-container">
+          <canvas id="drawing-canvas" width="280" height="280"></canvas>
+          <div class="canvas-tools">
+            <button id="clear-canvas">Clear</button>
+            <button id="predict-canvas">Recognize</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="upload-tab">
+        <form
+          id="upload-form"
+          action="/predict"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <div class="upload-area">
+            <label for="image-upload">
+              <div class="upload-prompt">
+                <div class="upload-icon">+</div>
+                <p>Click to upload an image</p>
+              </div>
+              <input
+                type="file"
+                id="image-upload"
+                name="image"
+                accept="image/*"
+                hidden
+              />
+            </label>
+          </div>
+          <!-- Only the preview container will be hidden by default -->
+          <div id="preview-container" class="hidden">
+            <img id="image-preview" alt="Preview" />
+            <button type="submit">Recognize Digit</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="result-container" class="hidden">
+        <h2>Prediction Results</h2>
+        <div class="prediction-display">
+          <div class="prediction-digit">?</div>
+          <div class="confidence-meter">
+            <div class="confidence-bar"></div>
+            <p class="confidence-text">Confidence: 0%</p>
+          </div>
+        </div>
+        <div class="alternative-predictions">
+          <h3>It could also be:</h3>
+          <div class="alternatives-container"></div>
+        </div>
+        <button id="try-again">Try Another</button>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>

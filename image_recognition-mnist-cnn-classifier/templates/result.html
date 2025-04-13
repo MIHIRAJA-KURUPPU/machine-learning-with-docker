@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MNIST Result</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container result-page">
+      <header>
+        <h1>Digit Recognition Result</h1>
+      </header>
+
+      <div class="result-content">
+        <div class="result-image">
+          {% if image_data %}
+          <img
+            src="data:image/png;base64,{{ image_data }}"
+            alt="Uploaded image"
+          />
+          {% else %}
+          <p>No image provided.</p>
+          {% endif %}
+        </div>
+
+        <div class="result-details">
+          {% if prediction %}
+          <h2 class="prediction">
+            Prediction: <span>{{ prediction['digit'] }}</span>
+          </h2>
+
+          <div class="confidence-meter">
+            <div
+              class="confidence-bar"
+              style="width: '{{ prediction['confidence'] }}%';"
+              <!--
+              Use
+              bracket
+              notation
+              here
+              --
+            >
+              >
+            </div>
+            <p class="confidence-text">
+              Confidence: {{ "%.2f"|format(prediction['confidence']) }}%
+            </p>
+          </div>
+
+          <div class="all-probabilities">
+            <h3>All Digit Probabilities:</h3>
+            <div class="probability-bars">
+              {% for i in range(10) %}
+              <div class="prob-item">
+                <span class="digit">{{ i }}</span>
+                <div class="prob-bar-container">
+                  <div
+                    class="prob-bar"
+                    style="width: '{{ (prediction['probabilities'][i] * 100) | round(2) }}%';"
+                    <!--
+                    Use
+                    bracket
+                    notation
+                    --
+                  >
+                    >
+                  </div>
+                </div>
+                <span class="prob-value">
+                  {{ "%.2f"|format(prediction['probabilities'][i] * 100) }}%
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <p>No prediction available.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{{ url_for('index') }}" class="btn">Try Another</a>
+      </div>
+    </div>
+  </body>
+</html>
