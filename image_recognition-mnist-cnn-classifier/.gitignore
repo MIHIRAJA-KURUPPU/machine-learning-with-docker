@@ -8,6 +8,8 @@ env/
 venv/
 ENV/
 *.env
+mnist_cnn_classifier/
+.mnist_cnn_classifier
 
 # VSCode settings
 .vscode/

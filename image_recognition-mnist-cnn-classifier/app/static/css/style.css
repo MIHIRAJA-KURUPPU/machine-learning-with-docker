@@ -156,10 +156,6 @@ button:hover {
   border: 1px solid #ddd;
 }
 
-.hidden {
-  display: none;
-}
-
 #result-container {
   text-align: center;
   padding: 2rem;

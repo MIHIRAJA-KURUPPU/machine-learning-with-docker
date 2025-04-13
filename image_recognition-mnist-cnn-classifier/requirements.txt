@@ -1,15 +1,9 @@
-# tensorflow==2.12.0
-# keras==2.12.0
-# matplotlib==3.7.1
-# numpy==1.24.3
-# Create a requirements.txt file
 # requirements.txt
 Flask
 flasgger
 numpy
 Pillow
-tensorflow
-keras
+tensorflow-cpu
 opencv-python
 Werkzeug
 matplotlib
